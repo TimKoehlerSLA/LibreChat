@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect, useCallback, useRef } from 'react';
 import { CustomMinimalIcon, XAIcon } from '@librechat/client';
 import { EModelEndpoint, KnownEndpoints } from 'librechat-data-provider';
 import { IconContext } from '~/common';
@@ -65,6 +65,26 @@ function UnknownIcon({
   endpoint?: EModelEndpoint | string | null;
   context?: 'landing' | 'menu-item' | 'nav' | 'message';
 }) {
+  const [imageError, setImageError] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  // Reset error state when iconURL changes
+  useEffect(() => {
+    setImageError(false);
+  }, [iconURL]);
+
+  // Check for image load errors (handles cached images that fail before React event handler)
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth === 0 && iconURL) {
+      setImageError(true);
+    }
+  }, [iconURL]);
+
+  const handleImageError = useCallback(() => {
+    setImageError(true);
+  }, []);
+
   const endpoint = _endpoint ?? '';
   if (!endpoint) {
     return <CustomMinimalIcon className={className} />;
@@ -85,7 +105,18 @@ function UnknownIcon({
   }
 
   if (iconURL) {
-    return <img className={className} src={iconURL} alt={`${endpoint} Icon`} />;
+    if (imageError) {
+      return <CustomMinimalIcon className={className} />;
+    }
+    return (
+      <img
+        ref={imgRef}
+        className={className}
+        src={iconURL}
+        alt={`${endpoint} Icon`}
+        onError={handleImageError}
+      />
+    );
   }
 
   const assetPath: string = knownEndpointAssets[currentEndpoint] ?? '';

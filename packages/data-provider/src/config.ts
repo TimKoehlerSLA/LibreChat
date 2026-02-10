@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { ZodError } from 'zod';
 import type { TEndpointsConfig, TModelsConfig, TConfig } from './types';
-import { EModelEndpoint, eModelEndpointSchema } from './schemas';
+import { DAPI_ENDPOINT, EModelEndpoint, eModelEndpointSchema } from './schemas';
 import { specsConfigSchema, TSpecsConfig } from './models';
 import { fileConfigSchema } from './file-config';
 import { apiBaseUrl } from './api-endpoints';
@@ -790,6 +790,8 @@ export type TStartupConfig = {
   >;
   mcpPlaceholder?: string;
   conversationImportMaxFileSize?: number;
+  /** The configured DAPI endpoint prefix name (default: 'dapi') */
+  dapiName?: string;
 };
 
 export enum OCRStrategy {
@@ -927,6 +929,27 @@ export type TMemoryConfig = DeepPartial<z.infer<typeof memorySchema>>;
 
 const customEndpointsSchema = z.array(endpointSchema.partial()).optional();
 
+export const dapiEndpointSchema = baseEndpointSchema.merge(
+  z.object({
+    name: z.string().optional().default('dapi'),
+    models: z
+      .object({
+        default: z.array(modelItemSchema).optional(),
+        fetch: z.boolean().optional(),
+      })
+      .optional(),
+    cache: z
+      .object({
+        enabled: z.boolean().optional(),
+        ttlMs: z.number().int().nonnegative().optional(),
+      })
+      .optional(),
+    iconURL: z.string().optional(),
+  }),
+);
+
+export type TDapiEndpoint = z.infer<typeof dapiEndpointSchema>;
+
 export const configSchema = z.object({
   version: z.string(),
   cache: z.boolean().default(true),
@@ -982,6 +1005,7 @@ export const configSchema = z.object({
       [EModelEndpoint.agents]: agentsEndpointSchema.optional(),
       [EModelEndpoint.custom]: customEndpointsSchema.optional(),
       [EModelEndpoint.bedrock]: baseEndpointSchema.optional(),
+      dapi: dapiEndpointSchema.optional(),
     })
     .strict()
     .refine((data) => Object.keys(data).length > 0, {
@@ -1067,6 +1091,7 @@ export const alternateName = {
   [EModelEndpoint.anthropic]: 'Anthropic',
   [EModelEndpoint.custom]: 'Custom',
   [EModelEndpoint.bedrock]: 'AWS Bedrock',
+  [DAPI_ENDPOINT]: 'DAPI',
   [KnownEndpoints.ollama]: 'Ollama',
   [KnownEndpoints.deepseek]: 'DeepSeek',
   [KnownEndpoints.xai]: 'xAI',

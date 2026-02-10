@@ -200,6 +200,14 @@ export const getModels = async (): Promise<t.TModelsConfig> => {
   return request.get(endpoints.models());
 };
 
+export const getModelsBase = async (): Promise<t.TModelsConfig> => {
+  return request.get(endpoints.modelsBase());
+};
+
+export const getModelsDapi = async (): Promise<t.TModelsConfig> => {
+  return request.get(endpoints.modelsDapi());
+};
+
 /* Assistants */
 
 export const createAssistant = ({

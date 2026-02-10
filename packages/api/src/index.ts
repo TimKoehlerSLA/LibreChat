@@ -31,6 +31,8 @@ export * from './agents';
 export * from './prompts';
 /* Endpoints */
 export * from './endpoints';
+/* DAPI */
+export * from './dapi';
 /* Files */
 export * from './files';
 /* Tools */

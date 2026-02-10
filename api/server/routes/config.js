@@ -147,6 +147,12 @@ router.get('/', async function (req, res) {
       payload.customFooter = process.env.CUSTOM_FOOTER;
     }
 
+    // Add DAPI config name if configured
+    const dapiConfig = appConfig?.endpoints?.dapi;
+    if (dapiConfig?.name) {
+      payload.dapiName = dapiConfig.name;
+    }
+
     await cache.set(CacheKeys.STARTUP_CONFIG, payload);
     return res.status(200).send(payload);
   } catch (err) {

@@ -1,4 +1,4 @@
-import { EModelEndpoint } from 'librechat-data-provider';
+import { DAPI_ENDPOINT, EModelEndpoint } from 'librechat-data-provider';
 import type { TCustomConfig, TAgentsEndpoint, TAnthropicEndpoint } from 'librechat-data-provider';
 import type { AppConfig } from '~/types';
 import { azureAssistantsDefaults, assistantsConfigSetup } from './assistants';
@@ -75,6 +75,10 @@ export const loadEndpoints = (
 
   if (endpoints?.all) {
     loadedEndpoints.all = endpoints.all;
+  }
+
+  if (endpoints?.[DAPI_ENDPOINT]) {
+    loadedEndpoints[DAPI_ENDPOINT] = endpoints[DAPI_ENDPOINT];
   }
 
   return loadedEndpoints;

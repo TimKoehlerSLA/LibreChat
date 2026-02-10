@@ -1,4 +1,4 @@
-const { loadCustomEndpointsConfig } = require('@librechat/api');
+const { loadCustomEndpointsConfig, listDapiProxies, isDapiEnabled, getDapiProxyEndpointNameWithPrefix } = require('@librechat/api');
 const {
   CacheKeys,
   EModelEndpoint,
@@ -35,6 +35,8 @@ async function getEndpointsConfig(req) {
     ...defaultEndpointsConfig,
     ...customEndpointsConfig,
   };
+
+  // DAPI proxy endpoints are applied dynamically per-request via applyDapiEndpoints
 
   if (appConfig.endpoints?.[EModelEndpoint.azureOpenAI]) {
     /** @type {Omit<TConfig, 'order'>} */
@@ -116,6 +118,50 @@ async function getEndpointsConfig(req) {
 }
 
 /**
+ * Applies DAPI proxy endpoints to the endpoint config dynamically per-request.
+ * Each proxy becomes its own endpoint with the format `{configName}:proxy-name`.
+ * The configName defaults to 'dapi' but can be customized via librechat.yaml.
+ * @param {ServerRequest} req
+ * @param {TEndpointsConfig} endpointsConfig
+ * @returns {Promise<TEndpointsConfig>}
+ */
+async function applyDapiEndpoints(req, endpointsConfig) {
+  if (!isDapiEnabled()) {
+    return endpointsConfig;
+  }
+
+  try {
+    const appConfig = req.config ?? (await getAppConfig({ role: req.user?.role }));
+    if (!req.config) {
+      req.config = appConfig;
+    }
+    const dapiConfig = appConfig?.endpoints?.dapi;
+    const configName = dapiConfig?.name;
+    const iconURL = dapiConfig?.iconURL ?? process.env.DAPI_ICON_URL;
+
+    const proxies = await listDapiProxies({ req });
+    if (!proxies || proxies.length === 0) {
+      return endpointsConfig;
+    }
+
+    const result = { ...endpointsConfig };
+    for (const proxy of proxies) {
+      const endpointName = getDapiProxyEndpointNameWithPrefix(proxy, configName);
+      result[endpointName] = {
+        type: EModelEndpoint.custom,
+        userProvide: false,
+        modelDisplayLabel: proxy.name,
+        ...(iconURL && { iconURL }),
+      };
+    }
+
+    return result;
+  } catch (error) {
+    return endpointsConfig;
+  }
+}
+
+/**
  * @param {ServerRequest} req
  * @param {import('librechat-data-provider').AgentCapabilities} capability
  * @returns {Promise<boolean>}
@@ -130,4 +176,4 @@ const checkCapability = async (req, capability) => {
   return capabilities.includes(capability);
 };
 
-module.exports = { getEndpointsConfig, checkCapability };
+module.exports = { getEndpointsConfig, checkCapability, applyDapiEndpoints };

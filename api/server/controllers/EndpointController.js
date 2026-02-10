@@ -1,7 +1,8 @@
-const { getEndpointsConfig } = require('~/server/services/Config');
+const { getEndpointsConfig, applyDapiEndpoints } = require('~/server/services/Config');
 
 async function endpointController(req, res) {
-  const endpointsConfig = await getEndpointsConfig(req);
+  const baseEndpointsConfig = await getEndpointsConfig(req);
+  const endpointsConfig = await applyDapiEndpoints(req, baseEndpointsConfig);
   res.send(JSON.stringify(endpointsConfig));
 }
 

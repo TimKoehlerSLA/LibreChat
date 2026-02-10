@@ -3,7 +3,7 @@ import { Spinner } from '@librechat/client';
 import { useParams } from 'react-router-dom';
 import { useRecoilCallback, useRecoilValue } from 'recoil';
 import { Constants, EModelEndpoint } from 'librechat-data-provider';
-import { useGetModelsQuery } from 'librechat-data-provider/react-query';
+import { useGetMergedModelsQuery } from 'librechat-data-provider/react-query';
 import type { TPreset } from 'librechat-data-provider';
 import { useGetConvoIdQuery, useGetStartupConfig, useGetEndpointsQuery } from '~/data-provider';
 import { useNewConvo, useAppStartup, useAssistantListMap, useIdChangeEffect } from '~/hooks';
@@ -34,7 +34,7 @@ export default function ChatRoute() {
   const { hasSetConversation, conversation } = store.useCreateConversationAtom(index);
   const { newConversation } = useNewConvo();
 
-  const modelsQuery = useGetModelsQuery({
+  const modelsQuery = useGetMergedModelsQuery({
     enabled: isAuthenticated,
     refetchOnMount: 'always',
   });

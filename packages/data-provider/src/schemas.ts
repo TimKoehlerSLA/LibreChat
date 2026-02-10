@@ -27,6 +27,22 @@ export enum EModelEndpoint {
   bedrock = 'bedrock',
 }
 
+export const DAPI_ENDPOINT = 'dapi';
+export const DAPI_ENDPOINT_PREFIX = 'dapi:';
+
+/** Get the DAPI endpoint prefix, optionally using a custom config name */
+export const getDapiEndpointPrefix = (configName?: string): string =>
+  configName ? `${configName}:` : DAPI_ENDPOINT_PREFIX;
+
+export const isDapiProxyEndpoint = (endpoint?: string | null): boolean =>
+  (endpoint ?? '').startsWith(DAPI_ENDPOINT_PREFIX);
+
+/** Check if endpoint is a DAPI proxy endpoint with a configurable prefix */
+export const isDapiProxyEndpointWithPrefix = (
+  endpoint?: string | null,
+  configName?: string,
+): boolean => (endpoint ?? '').startsWith(getDapiEndpointPrefix(configName));
+
 /** Mirrors `@librechat/agents` providers */
 export enum Providers {
   OPENAI = 'openAI',
@@ -49,6 +65,7 @@ export const documentSupportedProviders = new Set<string>([
   EModelEndpoint.anthropic,
   EModelEndpoint.openAI,
   EModelEndpoint.custom,
+  DAPI_ENDPOINT,
   // handled in AttachFileMenu and DragDropModal since azureOpenAI only supports documents with Use Responses API set to true
   // EModelEndpoint.azureOpenAI,
   EModelEndpoint.google,
@@ -64,6 +81,7 @@ const openAILikeProviders = new Set<string>([
   Providers.OPENAI,
   Providers.AZURE,
   EModelEndpoint.custom,
+  DAPI_ENDPOINT,
   Providers.MISTRALAI,
   Providers.MISTRAL,
   Providers.DEEPSEEK,
@@ -72,11 +90,11 @@ const openAILikeProviders = new Set<string>([
 ]);
 
 export const isOpenAILikeProvider = (provider?: string | null): boolean => {
-  return openAILikeProviders.has(provider ?? '');
+  return openAILikeProviders.has(provider ?? '') || isDapiProxyEndpoint(provider);
 };
 
 export const isDocumentSupportedProvider = (provider?: string | null): boolean => {
-  return documentSupportedProviders.has(provider ?? '');
+  return documentSupportedProviders.has(provider ?? '') || isDapiProxyEndpoint(provider);
 };
 
 export const paramEndpoints = new Set<EModelEndpoint | string>([

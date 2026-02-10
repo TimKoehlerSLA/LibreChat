@@ -7,6 +7,7 @@ import type {
   TMemoryConfig,
   EModelEndpoint,
   TVertexAIConfig,
+  TDapiEndpoint,
   TAgentsEndpoint,
   TCustomEndpoints,
   TAssistantEndpoint,
@@ -118,5 +119,7 @@ export interface AppConfig {
     [EModelEndpoint.custom]?: TCustomEndpoints;
     /** Global endpoint configuration */
     all?: Partial<TEndpoint>;
+    /** DAPI endpoint configuration */
+    dapi?: Partial<TDapiEndpoint>;
   };
 }
