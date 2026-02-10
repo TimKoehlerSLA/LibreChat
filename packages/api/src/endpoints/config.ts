@@ -1,14 +1,16 @@
 import { Providers } from '@librechat/agents';
-import { EModelEndpoint } from 'librechat-data-provider';
+import { DAPI_ENDPOINT, EModelEndpoint } from 'librechat-data-provider';
 import type { TEndpoint } from 'librechat-data-provider';
 import type { AppConfig } from '@librechat/data-schemas';
 import type { BaseInitializeParams, InitializeResultBase } from '~/types';
 import { initializeAnthropic } from './anthropic/initialize';
 import { initializeBedrock } from './bedrock/initialize';
 import { initializeCustom } from './custom/initialize';
+import { initializeDapi } from './dapi/initialize';
 import { initializeGoogle } from './google/initialize';
 import { initializeOpenAI } from './openai/initialize';
 import { getCustomEndpointConfig } from '~/app/config';
+import { isDapiProxyEndpoint, isDapiProxyEndpointWithPrefix } from '~/dapi';
 
 /**
  * Type for initialize functions
@@ -33,6 +35,7 @@ export const providerConfigMap: Record<string, InitializeFn> = {
   [Providers.XAI]: initializeCustom,
   [Providers.DEEPSEEK]: initializeCustom,
   [Providers.OPENROUTER]: initializeCustom,
+  [DAPI_ENDPOINT]: initializeDapi,
   [EModelEndpoint.openAI]: initializeOpenAI,
   [EModelEndpoint.google]: initializeGoogle,
   [EModelEndpoint.bedrock]: initializeBedrock,
@@ -68,6 +71,16 @@ export function getProviderConfig({
   provider: string;
   appConfig?: AppConfig;
 }): ProviderConfigResult {
+  // Handle DAPI proxy endpoints (configurable prefix, e.g., dapi:proxy-name or myapi:proxy-name)
+  const dapiConfigName = appConfig?.endpoints?.dapi?.name;
+  if (isDapiProxyEndpointWithPrefix(provider, dapiConfigName) || isDapiProxyEndpoint(provider)) {
+    return {
+      getOptions: initializeDapi,
+      overrideProvider: Providers.OPENAI,
+      customEndpointConfig: undefined,
+    };
+  }
+
   let getOptions = providerConfigMap[provider];
   let overrideProvider = provider;
   let customEndpointConfig: Partial<TEndpoint> | undefined;
@@ -89,6 +102,10 @@ export function getProviderConfig({
     if (!customEndpointConfig) {
       throw new Error(`Provider ${provider} not supported`);
     }
+  }
+
+  if (provider === DAPI_ENDPOINT) {
+    overrideProvider = Providers.OPENAI;
   }
 
   return {

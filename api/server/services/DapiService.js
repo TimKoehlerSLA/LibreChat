@@ -1,0 +1,31 @@
+const {
+  listDapiProxies,
+  mapDapiProxiesToModels,
+  resolveDapiProxy,
+  isDapiEnabled,
+  DAPI_ENDPOINT_PREFIX,
+  isDapiProxyEndpoint,
+  isDapiProxyEndpointWithPrefix,
+  extractDapiProxyIdentifier,
+  extractDapiProxyIdentifierWithPrefix,
+  getDapiProxyEndpointName,
+  getDapiProxyEndpointNameWithPrefix,
+  getDapiEndpointPrefix,
+  fetchDapiProxyModels,
+} = require('@librechat/api');
+
+module.exports = {
+  isDapiEnabled,
+  listDapiProxies,
+  mapDapiProxiesToModels,
+  resolveDapiProxy,
+  DAPI_ENDPOINT_PREFIX,
+  isDapiProxyEndpoint,
+  isDapiProxyEndpointWithPrefix,
+  extractDapiProxyIdentifier,
+  extractDapiProxyIdentifierWithPrefix,
+  getDapiProxyEndpointName,
+  getDapiProxyEndpointNameWithPrefix,
+  getDapiEndpointPrefix,
+  fetchDapiProxyModels,
+};

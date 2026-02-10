@@ -27,7 +27,7 @@ const { updateInterfacePermissions } = require('~/models/interface');
 const { checkMigrations } = require('./services/start/migration');
 const initializeMCPs = require('./services/initializeMCPs');
 const configureSocialLogins = require('./socialLogins');
-const { getAppConfig } = require('./services/Config');
+const { getAppConfig, clearAppConfigCache, clearConfigStoreCache } = require('./services/Config');
 const staticCache = require('./utils/staticCache');
 const noIndex = require('./middleware/noIndex');
 const { seedDatabase } = require('~/models');
@@ -203,7 +203,7 @@ if (cluster.isMaster) {
     }
 
     /** Connect to MongoDB */
-    await connectDb();
+  await connectDb();
     logger.info(`Worker ${process.pid}: Connected to MongoDB`);
 
     /** Background index sync (non-blocking) */
@@ -215,7 +215,22 @@ if (cluster.isMaster) {
     app.set('trust proxy', trusted_proxy);
 
     /** Seed database (idempotent) */
-    await seedDatabase();
+  const clearConfigCacheEnv = process.env.CLEAR_CONFIG_CACHE_ON_STARTUP;
+  const shouldClearConfigCache =
+    clearConfigCacheEnv == null ? true : isEnabled(clearConfigCacheEnv);
+  if (shouldClearConfigCache) {
+    const clearedAppConfigCache = await clearAppConfigCache();
+    if (!clearedAppConfigCache) {
+      logger.warn('[startup] Failed to clear app config cache');
+    }
+
+    const clearedConfigStoreCache = await clearConfigStoreCache();
+    if (!clearedConfigStoreCache) {
+      logger.warn('[startup] Failed to clear config store cache');
+    }
+  }
+
+  await seedDatabase();
 
     /** Initialize app configuration */
     const appConfig = await getAppConfig();

@@ -1,11 +1,13 @@
-import React, { useMemo, useCallback } from 'react';
-import { useGetModelsQuery } from 'librechat-data-provider/react-query';
+import React, { useMemo, useCallback, useEffect, useRef } from 'react';
+import { useToastContext } from '@librechat/client';
+import { useGetMergedModelsQuery } from 'librechat-data-provider/react-query';
 import {
   Permissions,
   alternateName,
   EModelEndpoint,
   PermissionTypes,
   getEndpointField,
+  isDapiProxyEndpointWithPrefix,
 } from 'librechat-data-provider';
 import type {
   TEndpointsConfig,
@@ -15,6 +17,7 @@ import type {
   Agent,
 } from 'librechat-data-provider';
 import type { Endpoint } from '~/common';
+import { NotificationSeverity } from '~/common';
 import { useGetEndpointsQuery } from '~/data-provider';
 import { mapEndpoints, getIconKey } from '~/utils';
 import { useHasAccess } from '~/hooks';
@@ -31,7 +34,9 @@ export const useEndpoints = ({
   endpointsConfig: TEndpointsConfig;
   startupConfig: TStartupConfig | undefined;
 }) => {
-  const modelsQuery = useGetModelsQuery();
+  const modelsQuery = useGetMergedModelsQuery();
+  const { showToast } = useToastContext();
+  const dapiNoticeShown = useRef(false);
   const { data: endpoints = [] } = useGetEndpointsQuery({ select: mapEndpoints });
   const interfaceConfig = startupConfig?.interface ?? {};
   const includedEndpoints = useMemo(
@@ -80,7 +85,7 @@ export const useEndpoints = ({
   );
 
   const mappedEndpoints: Endpoint[] = useMemo(() => {
-    return filteredEndpoints.map((ep) => {
+    const endpoints = filteredEndpoints.map((ep) => {
       const endpointType = getEndpointField(endpointsConfig, ep, 'type');
       const iconKey = getIconKey({ endpoint: ep, endpointsConfig, endpointType });
       const Icon = icons[iconKey];
@@ -178,7 +183,18 @@ export const useEndpoints = ({
 
       return result;
     });
-  }, [filteredEndpoints, endpointsConfig, modelsQuery.data, agents, assistants, azureAssistants]);
+
+    // Get the DAPI config name from startup config (defaults to 'dapi')
+    const dapiName = startupConfig?.dapiName;
+
+    return endpoints.filter((endpoint) => {
+      // Filter out dapi:* endpoints with no models (using configurable prefix)
+      if (isDapiProxyEndpointWithPrefix(endpoint.value, dapiName)) {
+        return (endpoint.models?.length ?? 0) > 0;
+      }
+      return true;
+    });
+  }, [filteredEndpoints, endpointsConfig, modelsQuery.data, agents, assistants, azureAssistants, startupConfig?.dapiName]);
 
   return {
     mappedEndpoints,

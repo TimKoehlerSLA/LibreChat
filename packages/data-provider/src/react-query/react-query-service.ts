@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type {
   UseQueryOptions,
@@ -191,6 +192,97 @@ export const useGetModelsQuery = (
     staleTime: Infinity,
     ...config,
   });
+};
+
+/**
+ * Fetches only base models (fast, cached on backend).
+ */
+export const useGetModelsBaseQuery = (
+  config?: UseQueryOptions<t.TModelsConfig>,
+): QueryObserverResult<t.TModelsConfig> => {
+  return useQuery<t.TModelsConfig>([QueryKeys.modelsBase], () => dataService.getModelsBase(), {
+    initialData: initialModelsConfig,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
+    ...config,
+  });
+};
+
+/**
+ * Fetches only DAPI models (slow, requires external API calls).
+ */
+export const useGetModelsDapiQuery = (
+  config?: UseQueryOptions<t.TModelsConfig>,
+): QueryObserverResult<t.TModelsConfig> => {
+  return useQuery<t.TModelsConfig>([QueryKeys.modelsDapi], () => dataService.getModelsDapi(), {
+    initialData: {},
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchOnMount: false,
+    staleTime: Infinity,
+    ...config,
+  });
+};
+
+export type MergedModelsQueryResult = {
+  /** Merged models data (base + DAPI) */
+  data: t.TModelsConfig | undefined;
+  /** True only while base models are loading (used for blocking UI) */
+  isLoading: boolean;
+  /** True while DAPI models are loading (for optional UI indicators) */
+  isDapiLoading: boolean;
+  /** True if base models fetch succeeded */
+  isSuccess: boolean;
+  /** True if base models fetch failed */
+  isError: boolean;
+  /** Error from base models fetch */
+  error: unknown;
+  /** Refetch both base and DAPI models */
+  refetch: () => Promise<void>;
+};
+
+/**
+ * Composite hook that fetches base models first (fast) and DAPI models in background.
+ * Returns merged data with isLoading based only on base models.
+ */
+export const useGetMergedModelsQuery = (
+  config?: UseQueryOptions<t.TModelsConfig>,
+): MergedModelsQueryResult => {
+  const baseQuery = useGetModelsBaseQuery(config);
+  const dapiQuery = useGetModelsDapiQuery({
+    ...config,
+    // Only start DAPI fetch after base models succeed
+    enabled: (config?.enabled ?? true) && baseQuery.isSuccess,
+  });
+
+  // Merge base and DAPI models
+  const mergedData = React.useMemo(() => {
+    if (!baseQuery.data) {
+      return undefined;
+    }
+    // Merge DAPI models on top of base models
+    return {
+      ...baseQuery.data,
+      ...(dapiQuery.data ?? {}),
+    };
+  }, [baseQuery.data, dapiQuery.data]);
+
+  const refetch = React.useCallback(async () => {
+    await baseQuery.refetch();
+    await dapiQuery.refetch();
+  }, [baseQuery, dapiQuery]);
+
+  return {
+    data: mergedData,
+    isLoading: baseQuery.isLoading,
+    isDapiLoading: dapiQuery.isLoading || dapiQuery.isFetching,
+    isSuccess: baseQuery.isSuccess,
+    isError: baseQuery.isError,
+    error: baseQuery.error,
+    refetch,
+  };
 };
 
 export const useCreatePresetMutation = (): UseMutationResult<

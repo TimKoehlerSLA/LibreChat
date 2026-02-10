@@ -1,0 +1,53 @@
+{
+  "data": [
+    { "id": "hippo-reranker", "object": "model", "created": 1677610602, "owned_by": "openai" },
+    {
+      "id": "hippo-text-embedding-large",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    },
+    { "id": "openai/gpt-oss-20b", "object": "model", "created": 1677610602, "owned_by": "openai" },
+    {
+      "id": "Qwen/Qwen3-Embedding-0.6B",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    },
+    { "id": "hippo-chat-vision", "object": "model", "created": 1677610602, "owned_by": "openai" },
+    {
+      "id": "hippo-text-embedding-small",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    },
+    { "id": "openai/gpt-oss-120b", "object": "model", "created": 1677610602, "owned_by": "openai" },
+    { "id": "hippo-chat-medium", "object": "model", "created": 1677610602, "owned_by": "openai" },
+    {
+      "id": "openai/gpt-oss-safeguard-20b",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    },
+    {
+      "id": "Qwen/Qwen3-Embedding-8B",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    },
+    {
+      "id": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    },
+    { "id": "hippo-chat-large", "object": "model", "created": 1677610602, "owned_by": "openai" },
+    {
+      "id": "BAAI/bge-multilingual-gemma2",
+      "object": "model",
+      "created": 1677610602,
+      "owned_by": "openai"
+    }
+  ],
+  "object": "list"
+}

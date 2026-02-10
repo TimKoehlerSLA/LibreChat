@@ -1,0 +1,15 @@
+{
+  "generatorName": "typescript-axios",
+  "inputSpec": "specs/dashboard.json",
+  "outputDir": "packages/api/src/dapi/generated",
+  "apiPackage": "apis",
+  "modelPackage": "models",
+  "additionalProperties": {
+    "supportsES6": true,
+    "apiPackage": "apis",
+    "modelPackage": "models",
+    "stringEnums": true,
+    "useSingleRequestParameter": true,
+    "withSeparateModelsAndApi": true
+  }
+}

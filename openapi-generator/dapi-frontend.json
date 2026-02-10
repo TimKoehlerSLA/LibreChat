@@ -1,0 +1,10 @@
+{
+  "generatorName": "typescript-fetch",
+  "inputSpec": "specs/dashboard.json",
+  "outputDir": "client/src/dapi/generated",
+  "additionalProperties": {
+    "supportsES6": true,
+    "typescriptThreePlus": true,
+    "useSingleRequestParameter": true
+  }
+}

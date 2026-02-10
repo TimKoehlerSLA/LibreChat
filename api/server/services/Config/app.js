@@ -73,12 +73,40 @@ async function getAppConfig(options = {}) {
  * @returns {Promise<boolean>}
  */
 async function clearAppConfigCache() {
+  const cache = getLogStores(CacheKeys.APP_CONFIG);
+  try {
+    if (typeof cache.clear === 'function') {
+      await cache.clear();
+      return true;
+    }
+
+    return await cache.delete(BASE_CONFIG_KEY);
+  } catch (error) {
+    logger.error('[clearAppConfigCache] Failed to clear app config cache:', error);
+    return false;
+  }
+}
+
+/**
+ * Clear the CONFIG_STORE cache namespace.
+ * @returns {Promise<boolean>}
+ */
+async function clearConfigStoreCache() {
   const cache = getLogStores(CacheKeys.CONFIG_STORE);
-  const cacheKey = CacheKeys.APP_CONFIG;
-  return await cache.delete(cacheKey);
+  try {
+    if (typeof cache.clear === 'function') {
+      await cache.clear();
+      return true;
+    }
+    return true;
+  } catch (error) {
+    logger.error('[clearConfigStoreCache] Failed to clear config store cache:', error);
+    return false;
+  }
 }
 
 module.exports = {
   getAppConfig,
   clearAppConfigCache,
+  clearConfigStoreCache,
 };
