@@ -35,6 +35,7 @@ const {
   TraversaalSearch,
   StructuredWolfram,
   TavilySearchResults,
+  FirecrawlScrape,
   createGeminiImageTool,
   createOpenAIImageTools,
 } = require('../');
@@ -181,6 +182,7 @@ const loadTools = async ({
     'azure-ai-search': StructuredACS,
     traversaal_search: TraversaalSearch,
     tavily_search_results_json: TavilySearchResults,
+    firecrawl_scrape: FirecrawlScrape,
   };
 
   const customConstructors = {

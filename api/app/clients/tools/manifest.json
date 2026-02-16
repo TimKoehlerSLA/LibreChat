@@ -97,6 +97,13 @@
     ]
   },
   {
+    "name": "Firecrawl Scrape",
+    "pluginKey": "firecrawl_scrape",
+    "description": "Scrape webpages and extract content as markdown, HTML, or other formats using Firecrawl.",
+    "icon": "https://www.firecrawl.dev/favicon.ico",
+    "authConfig": []
+  },
+  {
     "name": "Calculator",
     "pluginKey": "calculator",
     "description": "Perform simple and complex mathematical calculations.",
